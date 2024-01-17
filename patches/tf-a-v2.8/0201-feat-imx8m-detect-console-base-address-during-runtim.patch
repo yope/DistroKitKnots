@@ -1,0 +1,304 @@
+From: Marco Felsch <m.felsch@pengutronix.de>
+Date: Mon, 24 Jul 2023 15:05:58 +0200
+Subject: [PATCH] feat(imx8m): detect console base address during runtime
+
+Provide a helper to detect the enabled UART device during runtime. This
+lower the integration effort and make it more straight forward for
+'simple' use-cases with a single UART enabled. If multiple UARTs are
+enabled the first enabled is returned.
+
+The auto-detection is enabled by setting IMX_BOOT_UART_BASE=0 to keep
+the backward compatibility. For more advanced use-cases (multiple UARTs
+are enabled) the user still has to provide the correct base address.
+
+Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
+Change-Id: I300a167e1a10f9aa991c8d1c3efe2c6b23f56c47
+---
+ plat/imx/imx8m/imx8m_ccm.c                | 58 +++++++++++++++++++++++++++++++
+ plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c | 11 +++++-
+ plat/imx/imx8m/imx8mm/platform.mk         |  1 +
+ plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c | 11 +++++-
+ plat/imx/imx8m/imx8mn/platform.mk         |  1 +
+ plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c | 11 +++++-
+ plat/imx/imx8m/imx8mp/platform.mk         |  1 +
+ plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c | 11 +++++-
+ plat/imx/imx8m/imx8mq/platform.mk         |  1 +
+ plat/imx/imx8m/include/imx8m_ccm.h        | 12 +++++++
+ 10 files changed, 114 insertions(+), 4 deletions(-)
+ create mode 100644 plat/imx/imx8m/imx8m_ccm.c
+ create mode 100644 plat/imx/imx8m/include/imx8m_ccm.h
+
+diff --git a/plat/imx/imx8m/imx8m_ccm.c b/plat/imx/imx8m/imx8m_ccm.c
+new file mode 100644
+index 000000000000..10a00c990031
+--- /dev/null
++++ b/plat/imx/imx8m/imx8m_ccm.c
+@@ -0,0 +1,58 @@
++/*
++ * Copyright (c) 2023, Pengutronix. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <lib/mmio.h>
++#include <platform_def.h>
++
++#define UCR1    		0x80
++#define UCR1_UARTEN		BIT(0)
++#define DOMAIN0_RUNNING(d)	(((d) & 0x3) != 0)
++
++static struct imx_uart {
++	unsigned int ccm_reg;
++	unsigned int uart_base;
++} imx8m_uart_info[] = {
++	{	/* UART 1 */
++		.ccm_reg = 0x4490,
++		.uart_base = 0x30860000,
++	}, {	/* UART 2 */
++		.ccm_reg = 0x44a0,
++		.uart_base = 0x30890000,
++	}, {	/* UART 3 */
++		.ccm_reg = 0x44b0,
++		.uart_base = 0x30880000,
++	}, {	/* UART 4 */
++		.ccm_reg = 0x44c0,
++		.uart_base = 0x30a60000,
++	}
++};
++
++unsigned int imx8m_uart_get_base(void)
++{
++	unsigned int i;
++
++	for (i = 0; i < ARRAY_SIZE(imx8m_uart_info); i++) {
++		uint32_t val;
++
++		/*
++		 * At least check that the clock-gate is ungated before we
++		 * access the UART register.
++		 */
++		val = mmio_read_32(IMX_CCM_BASE + imx8m_uart_info[i].ccm_reg);
++		if (DOMAIN0_RUNNING(val)) {
++			val = mmio_read_32(imx8m_uart_info[i].uart_base + UCR1);
++			if (val & UCR1_UARTEN) {
++				return imx8m_uart_info[i].uart_base;
++			}
++		}
++	}
++
++	/*
++	 * We should return an error and inform the user but we can't do it
++	 * this early.
++	 */
++	return 0;
++}
+diff --git a/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c b/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
+index 67bfd3651dfe..8e6636147438 100644
+--- a/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
+@@ -27,6 +27,7 @@
+ #include <imx_uart.h>
+ #include <imx_rdc.h>
+ #include <imx8m_caam.h>
++#include <imx8m_ccm.h>
+ #include <imx8m_csu.h>
+ #include <plat_imx8.h>
+ 
+@@ -130,6 +131,7 @@ void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
++	unsigned int console_base = 0U;
+ 	static console_t console;
+ 	int i;
+ 
+@@ -144,7 +146,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 
+ 	imx_csu_init(csu_cfg);
+ 
+-	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
++#if IMX_BOOT_UART_BASE
++	console_base = IMX_BOOT_UART_BASE;
++#endif
++	if (console_base == 0U) {
++		console_base = imx8m_uart_get_base();
++	}
++
++	console_imx_uart_register(console_base, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
+diff --git a/plat/imx/imx8m/imx8mm/platform.mk b/plat/imx/imx8m/imx8mm/platform.mk
+index 7a42554f5739..22791fda4c2c 100644
+--- a/plat/imx/imx8m/imx8mm/platform.mk
++++ b/plat/imx/imx8m/imx8mm/platform.mk
+@@ -37,6 +37,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				plat/imx/imx8m/imx_rdc.c			\
+ 				plat/imx/imx8m/imx8m_csu.c			\
+ 				plat/imx/imx8m/imx8m_caam.c			\
++				plat/imx/imx8m/imx8m_ccm.c			\
+ 				plat/imx/imx8m/imx8m_psci_common.c		\
+ 				plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c	\
+ 				plat/imx/imx8m/imx8mm/imx8mm_psci.c		\
+diff --git a/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c b/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
+index eff198dd741c..aeb1cbf2945f 100644
+--- a/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
+@@ -25,6 +25,7 @@
+ #include <imx_uart.h>
+ #include <imx_rdc.h>
+ #include <imx8m_caam.h>
++#include <imx8m_ccm.h>
+ #include <imx8m_csu.h>
+ #include <platform_def.h>
+ #include <plat_imx8.h>
+@@ -121,6 +122,7 @@ static void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
++	unsigned int console_base = 0U;
+ 	static console_t console;
+ 	unsigned int val;
+ 	int i;
+@@ -141,7 +143,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
+ 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
+ 
+-	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
++#if IMX_BOOT_UART_BASE
++	console_base = IMX_BOOT_UART_BASE;
++#endif
++	if (console_base == 0U) {
++		console_base = imx8m_uart_get_base();
++	}
++
++	console_imx_uart_register(console_base, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
+diff --git a/plat/imx/imx8m/imx8mn/platform.mk b/plat/imx/imx8m/imx8mn/platform.mk
+index 1c0ad4f3bc23..46516104f16d 100644
+--- a/plat/imx/imx8m/imx8mn/platform.mk
++++ b/plat/imx/imx8m/imx8mn/platform.mk
+@@ -31,6 +31,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				plat/imx/imx8m/imx_aipstz.c			\
+ 				plat/imx/imx8m/imx_rdc.c			\
+ 				plat/imx/imx8m/imx8m_caam.c			\
++				plat/imx/imx8m/imx8m_ccm.c			\
+ 				plat/imx/imx8m/imx8m_csu.c			\
+ 				plat/imx/imx8m/imx8m_psci_common.c		\
+ 				plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c	\
+diff --git a/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c b/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+index 4c31fa28dab7..e25668b879b3 100644
+--- a/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+@@ -25,6 +25,7 @@
+ #include <imx_uart.h>
+ #include <imx_rdc.h>
+ #include <imx8m_caam.h>
++#include <imx8m_ccm.h>
+ #include <imx8m_csu.h>
+ #include <platform_def.h>
+ #include <plat_imx8.h>
+@@ -117,6 +118,7 @@ static void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
++	unsigned int console_base = 0U;
+ 	static console_t console;
+ 	unsigned int val;
+ 	unsigned int i;
+@@ -137,7 +139,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
+ 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
+ 
+-	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
++#if IMX_BOOT_UART_BASE
++	console_base = IMX_BOOT_UART_BASE;
++#endif
++	if (console_base == 0U) {
++		console_base = imx8m_uart_get_base();
++	}
++
++	console_imx_uart_register(console_base, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
+diff --git a/plat/imx/imx8m/imx8mp/platform.mk b/plat/imx/imx8m/imx8mp/platform.mk
+index 5414c0a5732d..cdb504de0f3d 100644
+--- a/plat/imx/imx8m/imx8mp/platform.mk
++++ b/plat/imx/imx8m/imx8mp/platform.mk
+@@ -32,6 +32,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				plat/imx/imx8m/imx_aipstz.c			\
+ 				plat/imx/imx8m/imx_rdc.c			\
+ 				plat/imx/imx8m/imx8m_caam.c			\
++				plat/imx/imx8m/imx8m_ccm.c			\
+ 				plat/imx/imx8m/imx8m_csu.c			\
+ 				plat/imx/imx8m/imx8m_psci_common.c		\
+ 				plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c	\
+diff --git a/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c b/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c
+index 3c2d223fef21..1cb2d2a25b54 100644
+--- a/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c
+@@ -25,6 +25,7 @@
+ #include <imx_aipstz.h>
+ #include <imx_uart.h>
+ #include <imx8m_caam.h>
++#include <imx8m_ccm.h>
+ #include <plat_imx8.h>
+ 
+ #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+@@ -124,6 +125,7 @@ static void bl31_tz380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 			u_register_t arg2, u_register_t arg3)
+ {
++	unsigned int console_base = 0U;
+ 	static console_t console;
+ 	int i;
+ 	/* enable CSU NS access permission */
+@@ -133,7 +135,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 
+ 	imx_aipstz_init(aipstz);
+ 
+-	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
++#if IMX_BOOT_UART_BASE
++	console_base = IMX_BOOT_UART_BASE;
++#endif
++	if (console_base == 0U) {
++		console_base = imx8m_uart_get_base();
++	}
++
++	console_imx_uart_register(console_base, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
+diff --git a/plat/imx/imx8m/imx8mq/platform.mk b/plat/imx/imx8m/imx8mq/platform.mk
+index 985be71725f7..0c34c10bdcb4 100644
+--- a/plat/imx/imx8m/imx8mq/platform.mk
++++ b/plat/imx/imx8m/imx8mq/platform.mk
+@@ -25,6 +25,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				plat/imx/imx8m/gpc_common.c			\
+ 				plat/imx/imx8m/imx_aipstz.c			\
+ 				plat/imx/imx8m/imx8m_caam.c			\
++				plat/imx/imx8m/imx8m_ccm.c			\
+ 				plat/imx/imx8m/imx8m_psci_common.c		\
+ 				plat/imx/imx8m/imx8mq/gpc.c			\
+ 				plat/imx/common/imx8_topology.c			\
+diff --git a/plat/imx/imx8m/include/imx8m_ccm.h b/plat/imx/imx8m/include/imx8m_ccm.h
+new file mode 100644
+index 000000000000..acbd135cb314
+--- /dev/null
++++ b/plat/imx/imx8m/include/imx8m_ccm.h
+@@ -0,0 +1,12 @@
++/*
++ * Copyright (c) 2023, Pengutronix. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#ifndef IMX8M_CCM_H
++#define IMX8M_CCM_H
++
++unsigned int imx8m_uart_get_base(void);
++
++#endif /* IMX8M_CCM_H */

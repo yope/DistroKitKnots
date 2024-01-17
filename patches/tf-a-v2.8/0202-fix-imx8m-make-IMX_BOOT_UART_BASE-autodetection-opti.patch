@@ -1,0 +1,172 @@
+From: Marco Felsch <m.felsch@pengutronix.de>
+Date: Wed, 2 Aug 2023 08:11:35 +0200
+Subject: [PATCH] fix(imx8m): make IMX_BOOT_UART_BASE autodetection option more
+ obvious
+
+Switch from IMX_BOOT_UART_BASE=0 to IMX_BOOT_UART_BASE=auto to make it
+more obvious that the detection is based on the runtime autodetection.
+
+In addition this moves the evaluation of IMX_BOOT_UART_BASE into the
+makefile which removes the ugly conditional compilation as well.
+
+Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
+Change-Id: I92c13607bf81c6267f4b6aee829d74902b7f72d2
+---
+ plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c | 5 +----
+ plat/imx/imx8m/imx8mm/platform.mk         | 3 +++
+ plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c | 5 +----
+ plat/imx/imx8m/imx8mn/platform.mk         | 3 +++
+ plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c | 5 +----
+ plat/imx/imx8m/imx8mp/platform.mk         | 3 +++
+ plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c | 5 +----
+ plat/imx/imx8m/imx8mq/platform.mk         | 3 +++
+ 8 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c b/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
+index 8e6636147438..c8a3adf8f333 100644
+--- a/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
+@@ -131,7 +131,7 @@ void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
+-	unsigned int console_base = 0U;
++	unsigned int console_base = IMX_BOOT_UART_BASE;
+ 	static console_t console;
+ 	int i;
+ 
+@@ -146,9 +146,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 
+ 	imx_csu_init(csu_cfg);
+ 
+-#if IMX_BOOT_UART_BASE
+-	console_base = IMX_BOOT_UART_BASE;
+-#endif
+ 	if (console_base == 0U) {
+ 		console_base = imx8m_uart_get_base();
+ 	}
+diff --git a/plat/imx/imx8m/imx8mm/platform.mk b/plat/imx/imx8m/imx8mm/platform.mk
+index 22791fda4c2c..1b4a1f2f37c7 100644
+--- a/plat/imx/imx8m/imx8mm/platform.mk
++++ b/plat/imx/imx8m/imx8mm/platform.mk
+@@ -159,6 +159,9 @@ BL32_SIZE		?=	0x2000000
+ $(eval $(call add_define,BL32_SIZE))
+ 
+ IMX_BOOT_UART_BASE	?=	0x30890000
++ifeq (${IMX_BOOT_UART_BASE},auto)
++    override IMX_BOOT_UART_BASE	:=	0
++endif
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
+ EL3_EXCEPTION_HANDLING := $(SDEI_SUPPORT)
+diff --git a/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c b/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
+index aeb1cbf2945f..147249ee5e56 100644
+--- a/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
+@@ -122,7 +122,7 @@ static void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
+-	unsigned int console_base = 0U;
++	unsigned int console_base = IMX_BOOT_UART_BASE;
+ 	static console_t console;
+ 	unsigned int val;
+ 	int i;
+@@ -143,9 +143,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
+ 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
+ 
+-#if IMX_BOOT_UART_BASE
+-	console_base = IMX_BOOT_UART_BASE;
+-#endif
+ 	if (console_base == 0U) {
+ 		console_base = imx8m_uart_get_base();
+ 	}
+diff --git a/plat/imx/imx8m/imx8mn/platform.mk b/plat/imx/imx8m/imx8mn/platform.mk
+index 46516104f16d..a6b43f213506 100644
+--- a/plat/imx/imx8m/imx8mn/platform.mk
++++ b/plat/imx/imx8m/imx8mn/platform.mk
+@@ -65,6 +65,9 @@ BL32_SIZE		?=	0x2000000
+ $(eval $(call add_define,BL32_SIZE))
+ 
+ IMX_BOOT_UART_BASE	?=	0x30890000
++ifeq (${IMX_BOOT_UART_BASE},auto)
++    override IMX_BOOT_UART_BASE	:=	0
++endif
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
+ EL3_EXCEPTION_HANDLING := $(SDEI_SUPPORT)
+diff --git a/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c b/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+index e25668b879b3..b0a41c741c17 100644
+--- a/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+@@ -118,7 +118,7 @@ static void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
+-	unsigned int console_base = 0U;
++	unsigned int console_base = IMX_BOOT_UART_BASE;
+ 	static console_t console;
+ 	unsigned int val;
+ 	unsigned int i;
+@@ -139,9 +139,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
+ 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
+ 
+-#if IMX_BOOT_UART_BASE
+-	console_base = IMX_BOOT_UART_BASE;
+-#endif
+ 	if (console_base == 0U) {
+ 		console_base = imx8m_uart_get_base();
+ 	}
+diff --git a/plat/imx/imx8m/imx8mp/platform.mk b/plat/imx/imx8m/imx8mp/platform.mk
+index cdb504de0f3d..0169144f4a1a 100644
+--- a/plat/imx/imx8m/imx8mp/platform.mk
++++ b/plat/imx/imx8m/imx8mp/platform.mk
+@@ -156,6 +156,9 @@ BL32_SIZE		?=	0x2000000
+ $(eval $(call add_define,BL32_SIZE))
+ 
+ IMX_BOOT_UART_BASE	?=	0x30890000
++ifeq (${IMX_BOOT_UART_BASE},auto)
++    override IMX_BOOT_UART_BASE	:=	0
++endif
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
+ EL3_EXCEPTION_HANDLING := $(SDEI_SUPPORT)
+diff --git a/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c b/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c
+index 1cb2d2a25b54..a2c81610b353 100644
+--- a/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mq/imx8mq_bl31_setup.c
+@@ -125,7 +125,7 @@ static void bl31_tz380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 			u_register_t arg2, u_register_t arg3)
+ {
+-	unsigned int console_base = 0U;
++	unsigned int console_base = IMX_BOOT_UART_BASE;
+ 	static console_t console;
+ 	int i;
+ 	/* enable CSU NS access permission */
+@@ -135,9 +135,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 
+ 	imx_aipstz_init(aipstz);
+ 
+-#if IMX_BOOT_UART_BASE
+-	console_base = IMX_BOOT_UART_BASE;
+-#endif
+ 	if (console_base == 0U) {
+ 		console_base = imx8m_uart_get_base();
+ 	}
+diff --git a/plat/imx/imx8m/imx8mq/platform.mk b/plat/imx/imx8m/imx8mq/platform.mk
+index 0c34c10bdcb4..6ee7d23d4882 100644
+--- a/plat/imx/imx8m/imx8mq/platform.mk
++++ b/plat/imx/imx8m/imx8mq/platform.mk
+@@ -55,6 +55,9 @@ BL32_SIZE		?=	0x2000000
+ $(eval $(call add_define,BL32_SIZE))
+ 
+ IMX_BOOT_UART_BASE	?=	0x30860000
++ifeq (${IMX_BOOT_UART_BASE},auto)
++    override IMX_BOOT_UART_BASE	:=	0
++endif
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
+ ifeq (${SPD},trusty)

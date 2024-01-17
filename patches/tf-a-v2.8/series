@@ -1,6 +1,6 @@
 # umpf-base: v2.8
 # umpf-name: 2.8/customers/pengutronix/distrokit
-# umpf-version: 2.8/customers/pengutronix/distrokit/20230210-1
+# umpf-version: 2.8/customers/pengutronix/distrokit/20240117-1
 # umpf-topic: v2.8/topic/fix-build-warnings
 # umpf-hashinfo: 4730b4b80206cf2fc27787f43cefd3169a6f8a2f
 # umpf-topic-range: 9881bb93a3bc0a3ea37e9f093e09ab4b360a9e48..da1b5e74dc7c2b3e7a2d9a1adb7e23beeba079e3
@@ -16,7 +16,12 @@
 0105-refactor-imx8mq-introduce-BL31_SIZE.patch
 0106-feat-imx8mq-add-BL31-PIE-support.patch
 0107-feat-imx8mq-add-support-for-gcc-12.x.patch
-# umpf-release: 2.8/customers/pengutronix/distrokit/20230210-1
-# umpf-topic-range: be7bcbebf5b22958e8b88564ca0865b4591263e7..827865ee983d0c7cd4bb99d85d46f972386e5ea9
-0201-Release-2.8-customers-pengutronix-distrokit-20230210.patch
+# umpf-topic: v2.8/topic/uart-runtime-detection
+# umpf-hashinfo: b59093eaea88fddf1c893eb8f45a3eadf1f570cc
+# umpf-topic-range: be7bcbebf5b22958e8b88564ca0865b4591263e7..015b0b19a839d0d4beb01babbe1af81917fcfb57
+0201-feat-imx8m-detect-console-base-address-during-runtim.patch
+0202-fix-imx8m-make-IMX_BOOT_UART_BASE-autodetection-opti.patch
+# umpf-release: 2.8/customers/pengutronix/distrokit/20240117-1
+# umpf-topic-range: 015b0b19a839d0d4beb01babbe1af81917fcfb57..070499680453a1c6a358828e4bd7cf6c9629ef6b
+0301-Release-2.8-customers-pengutronix-distrokit-20240117.patch
 # umpf-end
