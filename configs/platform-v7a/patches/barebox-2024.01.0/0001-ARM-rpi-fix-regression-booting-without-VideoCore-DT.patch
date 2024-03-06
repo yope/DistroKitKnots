@@ -1,0 +1,130 @@
+From 3ff500b014f4e7901721e5e581d50d7b5a7ff337 Mon Sep 17 00:00:00 2001
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Date: Tue, 5 Mar 2024 10:31:22 +0100
+Subject: [PATCH] ARM: rpi: fix regression booting without VideoCore DT
+
+The Raspberry Pi firmware running prior to barebox can load a kernel
+directly and thus can boot barebox-dt-2nd.img straight without having to
+use the Raspberry Pi specific entry points.
+
+However, the Raspberry Pi specific entry points, store the VideoCore DT
+into a handover area for earlier extraction of fixups done by the
+VideoCore firmware. This doesn't happen with barebox-dt-2nd.img.
+
+Commit 5ea6e19737e1 ("raspi: support to read vc values via dt-2nd boot")
+worked around this by using the barebox-internal DT, when a VideoCore DT
+wasn't saved, but this in turn added a slew of warnings to the valid setup
+of having no VideoCore DT at all and just using a proper Raspberry Pi
+PBL with their embedded DTs:
+
+    WARNING: no property 'serial-number' found in vc fdt's '' node
+    no '/system' node found in vc fdt
+    no '/axi' node found in vc fdt
+    no '/hat' node found in vc fdt
+    no '/chosen/bootloader' node found in vc fdt
+    WARNING: no property 'bootargs' found in vc fdt's '/chosen' node
+    WARNING: no property 'overlay_prefix' found in vc fdt's '/chosen' node
+    WARNING: no property 'os_prefix' found in vc fdt's '/chosen' node
+    WARNING: 'pm_rsts' value not found in vc fdt
+    ERROR: Won't delete root device node
+
+Fix this by not calling rpi_vc_fdt_parse on the barebox DT if a previous
+Raspberry Pi PBL has written VIDEOCORE_FDT_ERROR into the handoff area
+to indicate a missing VideoCore DT.
+
+Fixes: 5ea6e19737e1 ("raspi: support to read vc values via dt-2nd boot")
+Reported-by: Roland Hieber <rhi@pengutronix.de>
+Cc: Denis Osterland-Heim <denis.osterland@gmail.com>
+Link: https://lore.barebox.org/barebox/20240219191400.do7ib5rxy7tupv4i@pengutronix.de/
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+---
+ arch/arm/boards/raspberry-pi/rpi-common.c | 43 +++++++++++++++++------
+ 1 file changed, 33 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/boards/raspberry-pi/rpi-common.c b/arch/arm/boards/raspberry-pi/rpi-common.c
+index 1dfd0b0a10f4..7c82c740e256 100644
+--- a/arch/arm/boards/raspberry-pi/rpi-common.c
++++ b/arch/arm/boards/raspberry-pi/rpi-common.c
+@@ -332,7 +332,7 @@ static void rpi_vc_fdt_parse(struct device_node *root)
+ 	chosen = register_vc_fixup(root, "/chosen");
+ 	if (!chosen) {
+ 		pr_err("no '/chosen' node found in vc fdt\n");
+-		goto out;
++		return;
+ 	}
+ 
+ 	bootloader = of_find_node_by_name(chosen, "bootloader");
+@@ -385,13 +385,20 @@ static void rpi_vc_fdt_parse(struct device_node *root)
+ 
+ 		of_add_memory(memory, false);
+ 	}
+-
+-out:
+-	if (root)
+-		of_delete_node(root);
+-	return;
+ }
+ 
++/**
++ * rpi_vc_fdt - unflatten VideoCore provided DT
++ *
++ * If configured via config.txt, the VideoCore firmware will pass barebox PBL
++ * a device-tree in a register. This is saved to a handover memory area by
++ * the Raspberry Pi PBL, which is parsed here. barebox-dt-2nd doesn't
++ * populate this area, instead it uses the VideoCore DT as its own DT.
++ *
++ * Return: an unflattened DT on success, an error pointer if parsing the DT
++ * fails and NULL if a Raspberry Pi PBL has run, but no VideoCore FDT was
++ * saved.
++ */
+ static struct device_node *rpi_vc_fdt(void)
+ {
+ 	void *saved_vc_fdt;
+@@ -408,7 +415,7 @@ static struct device_node *rpi_vc_fdt(void)
+ 		if (oftree->totalsize)
+ 			pr_err("there was an error copying fdt in pbl: %d\n",
+ 					be32_to_cpu(oftree->totalsize));
+-		return ERR_PTR(-EINVAL);
++		return NULL;
+ 	}
+ 
+ 	if (magic != FDT_MAGIC)
+@@ -481,7 +488,7 @@ static int rpi_devices_probe(struct device *dev)
+ 	const struct rpi_machine_data *dcfg;
+ 	struct regulator *reg;
+ 	struct rpi_priv *priv;
+-	struct device_node *root;
++	struct device_node *vc_root;
+ 	const char *name, *ptr;
+ 	char *hostname;
+ 	int ret;
+@@ -510,8 +517,24 @@ static int rpi_devices_probe(struct device *dev)
+ 	bcm2835_register_fb();
+ 	armlinux_set_architecture(MACH_TYPE_BCM2708);
+ 	rpi_env_init();
+-	root = rpi_vc_fdt();
+-	rpi_vc_fdt_parse(IS_ERR(root) ? priv->dev->device_node : root);
++
++	vc_root = rpi_vc_fdt();
++	if (!vc_root) {
++		dev_dbg(dev, "No VideoCore FDT was provided\n");
++	} else if (!IS_ERR(vc_root)) {
++		dev_dbg(dev, "VideoCore FDT was provided\n");
++		rpi_vc_fdt_parse(vc_root);
++		of_delete_node(vc_root);
++	} else if (IS_ERR(vc_root)) {
++		/* This is intentionally at a higher logging level, because we can't
++		 * be sure that the external DT is indeed a barebox DT (and not a
++		 * kernel DT that happened to be in the partition). So for ease
++		 * of debugging, we report this at info log level.
++		 */
++		dev_info(dev, "barebox FDT will be used for VideoCore FDT\n");
++		rpi_vc_fdt_parse(priv->dev->device_node);
++	}
++
+ 	rpi_set_kernel_name();
+ 
+ 	if (dcfg && dcfg->init)
+-- 
+2.39.2
+
