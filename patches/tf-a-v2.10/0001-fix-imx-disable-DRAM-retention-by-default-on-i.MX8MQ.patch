@@ -1,0 +1,182 @@
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Date: Wed, 13 Mar 2024 08:08:13 +0100
+Subject: [PATCH] fix(imx): disable DRAM retention by default on i.MX8MQ
+
+Building the default upstream configuration for the imx8mq-evk is no longer
+possible: The linker will complain that the TF-A image would no longer
+fit On-Chip SRAM.
+
+In order to make the i.MX8MQ Image buildable again, let's make the DRAM
+retention feature optional: It was added in v2.9 and it's possible to
+boot the systems without it. Users that make space elsewhere and wish to
+enable it can use the newly introduced IMX_DRAM_RETENTION parameter to
+configure it. The parameter is added to all i.MX8M variants, but only
+for i.MX8MQ, we disable it by default, as that's the one that currently
+has binary size problems.
+
+Change-Id: I714f8ea96f18154db02390ba500f4a2dc5329ee7
+Fixes: dd108c3c1fe3 ("feat(imx8mq): add the dram retention support for imx8mq")
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+---
+ plat/imx/common/include/imx_sip_svc.h | 8 ++++++++
+ plat/imx/imx8m/imx8mm/platform.mk     | 9 ++++++++-
+ plat/imx/imx8m/imx8mn/platform.mk     | 9 ++++++++-
+ plat/imx/imx8m/imx8mp/platform.mk     | 9 ++++++++-
+ plat/imx/imx8m/imx8mq/platform.mk     | 9 ++++++++-
+ plat/imx/imx8m/include/dram.h         | 8 +++++++-
+ 6 files changed, 47 insertions(+), 5 deletions(-)
+
+diff --git a/plat/imx/common/include/imx_sip_svc.h b/plat/imx/common/include/imx_sip_svc.h
+index 0e91c7174a52..5015eb6a1f11 100644
+--- a/plat/imx/common/include/imx_sip_svc.h
++++ b/plat/imx/common/include/imx_sip_svc.h
+@@ -57,8 +57,16 @@ int imx_soc_info_handler(uint32_t smc_fid, u_register_t x1,
+ 			 u_register_t x2, u_register_t x3);
+ int imx_gpc_handler(uint32_t smc_fid, u_register_t x1,
+ 		    u_register_t x2, u_register_t x3);
++#if IMX_DRAM_RETENTION
+ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
+ 	u_register_t x1, u_register_t x2, u_register_t x3);
++#else
++static inline int dram_dvfs_handler(uint32_t smc_fid, void *handle,
++		u_register_t x1, u_register_t x2, u_register_t x3)
++{
++	SMC_RET1(handle, SMC_UNK);
++}
++#endif
+ #endif
+ #if defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
+diff --git a/plat/imx/imx8m/imx8mm/platform.mk b/plat/imx/imx8m/imx8mm/platform.mk
+index 97f4f248824d..849ae5e4ca36 100644
+--- a/plat/imx/imx8m/imx8mm/platform.mk
++++ b/plat/imx/imx8m/imx8mm/platform.mk
+@@ -52,7 +52,6 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				drivers/delay_timer/delay_timer.c		\
+ 				drivers/delay_timer/generic_delay_timer.c	\
+ 				${XLAT_TABLES_LIB_SRCS}				\
+-				${IMX_DRAM_SOURCES}				\
+ 				${IMX_GIC_SOURCES}
+ 
+ ifeq (${NEED_BL2},yes)
+@@ -153,6 +152,14 @@ ERRATA_A53_835769	:=	1
+ ERRATA_A53_843419	:=	1
+ ERRATA_A53_855873	:=	1
+ 
++IMX_DRAM_RETENTION	?=	1
++$(eval $(call assert_boolean,IMX_DRAM_RETENTION))
++$(eval $(call add_define,IMX_DRAM_RETENTION))
++
++ifeq (${IMX_DRAM_RETENTION},1)
++BL31_SOURCES		+=	${IMX_DRAM_SOURCES}
++endif
++
+ BL32_BASE		?=	0xbe000000
+ $(eval $(call add_define,BL32_BASE))
+ 
+diff --git a/plat/imx/imx8m/imx8mn/platform.mk b/plat/imx/imx8m/imx8mn/platform.mk
+index e0826e29a88c..94d31a2681aa 100644
+--- a/plat/imx/imx8m/imx8mn/platform.mk
++++ b/plat/imx/imx8m/imx8mn/platform.mk
+@@ -46,7 +46,6 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				drivers/arm/tzc/tzc380.c			\
+ 				drivers/delay_timer/delay_timer.c		\
+ 				drivers/delay_timer/generic_delay_timer.c	\
+-				${IMX_DRAM_SOURCES}				\
+ 				${IMX_GIC_SOURCES}				\
+ 				${XLAT_TABLES_LIB_SRCS}
+ 
+@@ -59,6 +58,14 @@ ERRATA_A53_835769	:=	1
+ ERRATA_A53_843419	:=	1
+ ERRATA_A53_855873	:=	1
+ 
++IMX_DRAM_RETENTION	?=	1
++$(eval $(call assert_boolean,IMX_DRAM_RETENTION))
++$(eval $(call add_define,IMX_DRAM_RETENTION))
++
++ifeq (${IMX_DRAM_RETENTION},1)
++BL31_SOURCES		+=	${IMX_DRAM_SOURCES}
++endif
++
+ BL32_BASE		?=	0xbe000000
+ $(eval $(call add_define,BL32_BASE))
+ 
+diff --git a/plat/imx/imx8m/imx8mp/platform.mk b/plat/imx/imx8m/imx8mp/platform.mk
+index ce6907195152..1f699c4f26f0 100644
+--- a/plat/imx/imx8m/imx8mp/platform.mk
++++ b/plat/imx/imx8m/imx8mp/platform.mk
+@@ -47,7 +47,6 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				drivers/arm/tzc/tzc380.c			\
+ 				drivers/delay_timer/delay_timer.c		\
+ 				drivers/delay_timer/generic_delay_timer.c	\
+-				${IMX_DRAM_SOURCES}				\
+ 				${IMX_GIC_SOURCES}				\
+ 				${XLAT_TABLES_LIB_SRCS}
+ 
+@@ -150,6 +149,14 @@ ERRATA_A53_835769	:=	1
+ ERRATA_A53_843419	:=	1
+ ERRATA_A53_855873	:=	1
+ 
++IMX_DRAM_RETENTION	?=	1
++$(eval $(call assert_boolean,IMX_DRAM_RETENTION))
++$(eval $(call add_define,IMX_DRAM_RETENTION))
++
++ifeq (${IMX_DRAM_RETENTION},1)
++BL31_SOURCES		+=	${IMX_DRAM_SOURCES}
++endif
++
+ BL32_BASE		?=	0x56000000
+ $(eval $(call add_define,BL32_BASE))
+ 
+diff --git a/plat/imx/imx8m/imx8mq/platform.mk b/plat/imx/imx8m/imx8mq/platform.mk
+index b1c189fa09f5..b48449725791 100644
+--- a/plat/imx/imx8m/imx8mq/platform.mk
++++ b/plat/imx/imx8m/imx8mq/platform.mk
+@@ -42,7 +42,6 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
+ 				drivers/delay_timer/delay_timer.c		\
+ 				drivers/delay_timer/generic_delay_timer.c	\
+ 				${XLAT_TABLES_LIB_SRCS}				\
+-				${IMX_DRAM_SOURCES}				\
+ 				${IMX_GIC_SOURCES}
+ 
+ ENABLE_PIE		:=	1
+@@ -55,6 +54,14 @@ ERRATA_A53_835769	:=	1
+ ERRATA_A53_843419	:=	1
+ ERRATA_A53_855873	:=	1
+ 
++IMX_DRAM_RETENTION	?=	0
++$(eval $(call assert_boolean,IMX_DRAM_RETENTION))
++$(eval $(call add_define,IMX_DRAM_RETENTION))
++
++ifeq (${IMX_DRAM_RETENTION},1)
++BL31_SOURCES		+=	${IMX_DRAM_SOURCES}
++endif
++
+ BL32_BASE		?=	0xfe000000
+ $(eval $(call add_define,BL32_BASE))
+ 
+diff --git a/plat/imx/imx8m/include/dram.h b/plat/imx/imx8m/include/dram.h
+index 719c39063778..1cf0666e9cad 100644
+--- a/plat/imx/imx8m/include/dram.h
++++ b/plat/imx/imx8m/include/dram.h
+@@ -70,13 +70,19 @@ struct dram_info {
+ 
+ extern struct dram_info dram_info;
+ 
+-void dram_info_init(unsigned long dram_timing_base);
+ void dram_umctl2_init(struct dram_timing_info *timing);
+ void dram_phy_init(struct dram_timing_info *timing);
+ 
+ /* dram retention */
++#if IMX_DRAM_RETENTION
++void dram_info_init(unsigned long dram_timing_base);
+ void dram_enter_retention(void);
+ void dram_exit_retention(void);
++#else
++static inline void dram_info_init(unsigned long dram_timing_base) {}
++static inline void dram_enter_retention(void) {}
++static inline void dram_exit_retention(void) {}
++#endif
+ 
+ void dram_clock_switch(unsigned int target_drate, bool bypass_mode);
+ 
