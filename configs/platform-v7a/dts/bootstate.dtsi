@@ -58,7 +58,11 @@
 	};
 };
 
+#ifdef bcm2711_rpi_4_dts
+&emmc2 {
+#else
 &sdhost {
+#endif
 	#address-cells = <1>;
 	#size-cells = <1>;
 
