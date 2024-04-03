@@ -25,12 +25,9 @@
 
                barebox: partition@0 {
                        label = "barebox";
-                       reg = <0x0 0x0 0x0 0xc000>;
+                       reg = <0x0 0x0 0x0 0xe0000>;
                };
-               environment: partition@c0000 {
-                       label = "barebox-environment";
-                       reg = <0x0 0xc0000 0x0 0x20000>;
-               };
+
                backend_state_mmc1: partition@e0000 {
                        label = "state";
                        reg = <0x0 0xe0000 0x0 0x20000>;
@@ -68,11 +65,6 @@
 	statepart: partition@100000 {
 		label = "barebox-state";
 		reg = <0x100000 0x100000>;
-	};
-
-	partition@200000 {
-		label = "barebox-environment";
-		reg = <0x200000 0x100000>;
 	};
 };
 #endif
