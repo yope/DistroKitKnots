@@ -205,9 +205,9 @@ PTXCONF_BOOTLOADER=y
 # PTXCONF_GRUB is not set
 # PTXCONF_HOST_MXS_UTILS is not set
 PTXCONF_TF_A=y
-PTXCONF_TF_A_URL="https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/snapshot"
+PTXCONF_TF_A_URL="https://github.com/ARM-software/arm-trusted-firmware/archive/refs/tags"
 PTXCONF_TF_A_VERSION="v2.10"
-PTXCONF_TF_A_MD5="641f42080967e05d687ef2fa9f8f3bc3"
+PTXCONF_TF_A_MD5="641f42080967e05d687ef2fa9f8f3bc3 179042745d57dc03cb44063d43dc5301"
 PTXCONF_TF_A_ARCH_STRING="aarch64"
 PTXCONF_TF_A_ARM_ARCH_MAJOR_8=y
 PTXCONF_TF_A_ARM_ARCH_MAJOR=8
