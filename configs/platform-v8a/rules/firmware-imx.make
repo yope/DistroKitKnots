@@ -92,6 +92,11 @@ $(STATEDIR)/firmware-imx.install:
 		$(FIRMWARE_IMX_PKGDIR)/usr/lib/firmware/vpu/$(f)$(ptx/nl))
 
 ifdef PTXCONF_FIRMWARE_IMX_BOOTIMAGE_IMX8
+	@$(foreach f, lpddr4_pmu_train_1d_imem_202006.bin lpddr4_pmu_train_1d_dmem_202006.bin \
+	              lpddr4_pmu_train_2d_imem_202006.bin lpddr4_pmu_train_2d_dmem_202006.bin, \
+		install -v -D -m644 $(FIRMWARE_IMX_DIR)/firmware/ddr/synopsys/$(f) \
+		$(FIRMWARE_IMX_PKGDIR)/usr/lib/firmware/ddr/synopsys/$(f)$(ptx/nl))
+
 	@$(foreach f, lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_1d_imem.bin \
 	              lpddr4_pmu_train_2d_dmem.bin lpddr4_pmu_train_2d_imem.bin, \
 		install -v -D -m644 $(FIRMWARE_IMX_DIR)/firmware/ddr/synopsys/$(f) \
