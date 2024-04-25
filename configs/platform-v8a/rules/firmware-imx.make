@@ -112,6 +112,13 @@ ifdef PTXCONF_FIRMWARE_IMX_BOOTIMAGE_IMX8
 		$(FIRMWARE_IMX_PKGDIR)/usr/lib/firmware/hdmi/cadence/$(f)$(ptx/nl))
 endif
 
+ifdef PTXCONF_FIRMWARE_IMX_BOOTIMAGE_IMX9
+	@$(foreach f, lpddr4_imem_1d_v202201.bin lpddr4_dmem_1d_v202201.bin \
+	              lpddr4_imem_2d_v202201.bin lpddr4_dmem_2d_v202201.bin, \
+		install -v -D -m644 $(FIRMWARE_IMX_DIR)/firmware/ddr/synopsys/$(f) \
+		$(FIRMWARE_IMX_PKGDIR)/usr/lib/firmware/ddr/synopsys/$(f)$(ptx/nl))
+endif
+
 	@$(call touch)
 
 # ----------------------------------------------------------------------------

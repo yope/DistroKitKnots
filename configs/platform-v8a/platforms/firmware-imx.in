@@ -45,6 +45,13 @@ config FIRMWARE_IMX_BOOTIMAGE_IMX8
 	  Install the Synopsis DDR PHY controller and Cadence HDMI TX
 	  firmware used to build a boot image.
 
+config FIRMWARE_IMX_BOOTIMAGE_IMX9
+	bool
+	prompt "Install i.MX9 DDR PHY firmware"
+	help
+	  Install the Synopsis DDR PHY controller firmware used to build
+	  a boot image.
+
 endif
 
 config BAREBOX_DEPENDENCIES
@@ -52,4 +59,3 @@ config BAREBOX_DEPENDENCIES
 	select FIRMWARE_IMX
 	select FIRMWARE_IMX_BOOTIMAGE_IMX8
 	select TF_A
-
