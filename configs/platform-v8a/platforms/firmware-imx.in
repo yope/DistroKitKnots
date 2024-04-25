@@ -50,5 +50,6 @@ endif
 config BAREBOX_DEPENDENCIES
 	tristate
 	select FIRMWARE_IMX
+	select FIRMWARE_IMX_BOOTIMAGE_IMX8
 	select TF_A
 
