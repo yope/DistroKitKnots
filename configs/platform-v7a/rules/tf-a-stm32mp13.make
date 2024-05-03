@@ -22,7 +22,7 @@ TF_A_STM32MP13_SUFFIX		:= tar.gz
 TF_A_STM32MP13_URL		 = $(TF_A_URL)
 TF_A_STM32MP13_SOURCE		 = $(TF_A_SOURCE)
 TF_A_STM32MP13_DIR		:= $(BUILDDIR)/$(TF_A_STM32MP13)
-TF_A_STM32MP13_BUILDDIR		:= $(TF_A_STM32MP13_DIR)/build
+TF_A_STM32MP13_BUILD_DIR	:= $(TF_A_STM32MP13_DIR)/build
 TF_A_STM32MP13_BUILD_OOT	:= YES
 TF_A_STM32MP13_LICENSE		:= BSD-3-Clause AND BSD-2-Clause \
 		   AND (GPL-2.0-or-later OR BSD-2-Clause) \
@@ -78,7 +78,7 @@ $(STATEDIR)/tf-a-stm32mp13.compile:
 
 tf-a-stm32mp13/inst_plat = $(foreach artifact, \
 	$(foreach pattern, $(TF_A_STM32MP13_ARTIFACTS), \
-	$(wildcard $(TF_A_STM32MP13_BUILDDIR)/$(1)/$(if $(filter DEBUG=1,TF_A_STM32MP13_MAKE_OPT),debug,release)/$(pattern))), \
+	$(wildcard $(TF_A_STM32MP13_BUILD_DIR)/$(1)/$(if $(filter DEBUG=1,TF_A_STM32MP13_MAKE_OPT),debug,release)/$(pattern))), \
 	install -v -D -m 644 $(artifact) \
 		$(2)/$(1)-$(notdir $(artifact))$(ptx/nl))
 
