@@ -1,8 +1,0 @@
-## SECTION=project_specific
-
-config DATAPARTITION
-	tristate "datapartition"
-	select RC_ONCE
-	select SYSTEMD
-	select SYSTEMD_REPART
-	default y
