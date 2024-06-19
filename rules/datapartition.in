@@ -1,7 +1,7 @@
 ## SECTION=project_specific
 
 config DATAPARTITION
-	tristate
+	tristate "datapartition"
 	select RC_ONCE
 	select SYSTEMD
 	select SYSTEMD_REPART
