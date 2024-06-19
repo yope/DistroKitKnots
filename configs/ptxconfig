@@ -2,8 +2,13 @@
 # Automatically generated file; DO NOT EDIT.
 # PTXdist 2024.05.0
 #
+
+#
+# DistroKit                     
+#
 PTXCONF_RAUC_UDEV=y
 PTXCONF_REPART_CONFIG=y
+# end of DistroKit                     
 
 #
 # ------------------------------------

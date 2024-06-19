@@ -1,4 +1,4 @@
-## SECTION=project_specific
+## SECTION=distrokit
 
 config RAUC_UDEV
 	tristate
