@@ -102,6 +102,7 @@
 
 /** STM32MP1 ******************************************************************/
 #if defined(stm32mp157c_lxa_mc1_dts) || \
+    defined(stm32mp157c_lxa_mc1_scmi_dts) || \
     defined(stm32mp157c_dk2_dts) || \
     defined(stm32mp157c_ev1_dts) || \
     defined(stm32mp135f_dk_dts)

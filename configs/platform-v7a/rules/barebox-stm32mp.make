@@ -51,6 +51,7 @@ BAREBOX_STM32MP_FIP_DTBS := \
 	stm32mp157c-dk2.dtb \
 	stm32mp157c-ev1.dtb \
 	stm32mp157c-lxa-mc1.dtb \
+	stm32mp157c-lxa-mc1-scmi.dtb \
 	stm32mp135f-dk.dtb
 
 BAREBOX_STM32MP_IMAGES := $(addprefix $(BAREBOX_STM32MP_BUILD_DIR)/,$(BAREBOX_STM32MP_IMAGES))
