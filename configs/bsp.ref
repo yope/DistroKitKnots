@@ -39,7 +39,7 @@ optee_disabled_features:
     management and clock/reset control support. We don't use it as
     part of a trusted boot setup, so we prefer debuggability over
     reduction of the attack surface.
-  condition: kconfig.OPTEEConfig()['CFG_STM32MP13']
+  condition: kconfig.have_optee_config() and kconfig.OPTEEConfig()['CFG_STM32MP13']
   present:
     - CFG_DEBUG_INFO
     - CFG_ENABLE_EMBEDDED_TESTS
