@@ -45,6 +45,36 @@ optee_disabled_features:
     - CFG_ENABLE_EMBEDDED_TESTS
     - CFG_TEE_CORE_TA_TRACE
 
+barebox_arm_optimized_string_functions:
+  description: |
+    The use of assembler optimized memcpy / memset functions improves
+    throughput at the cost of an increase in binary size.
+    The am335x-mlo configuration is very size constrained, because it
+    needs to fit into on-chip SRAM to be able to set up DRAM and thus
+    we use the smaller C implementation instead.
+  variants:
+    - condition: |
+        kconfig.have_barebox_config() and
+        kconfig.BareboxConfig()['ARCH_OMAP'] and kconfig.BareboxConfig()['SHELL_NONE']
+      value: False
+    - value: True
+
+barebox_gpt_support:
+  description: |
+    The am335x boot ROM expects SD/MMC media to be formatted as MBR
+    and loads the first stage bootloader from the BOOT.BIN file from the
+    first vfat partition. As the MLO
+
+    As the am335x-mlo configuration's only function is to chainload
+    barebox, we only need GPT support later on in the second stage
+    barebox-am335x configuration.
+  variants:
+    - condition: |
+        kconfig.have_barebox_config() and
+        kconfig.BareboxConfig()['ARCH_OMAP'] and kconfig.BareboxConfig()['SHELL_NONE']
+      value: False
+    - value: True
+
 rootfs_unused_libraries:
   description: |
     - libatomic is needed on mips and rpi1 by libcrypto, but for simplicity ship it on all platforms
