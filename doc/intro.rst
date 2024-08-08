@@ -122,10 +122,15 @@ Maintenance scripts
 Before sending your patch, you should run ``ptxdist lint`` and check its output.
 Your patch should not add any new lint errors.
 
-For migrating PTXdist to a new version, there is the wrapper script
-``scripts/p-all`` that runs PTXdist with the supplied arguments on all existing
-platforms in DistroKit, for example::
+The wrapper script ``scripts/p-all`` runs PTXdist with the supplied arguments on
+all existing platforms in DistroKit.
 
+To migrate DistroKit to a new PTXdist version, first update the *ptxconfig* by
+calling the new PTXdist version explicitely, then use ``scripts/p-all`` (which
+will use the PTXdist version from the updated ptxconfig) to update all
+*platformconfigs:*:
+
+   $ ptxdist-2024.08.0 migrate
    $ ./scripts/p-all migrate
 
 Some platforms use config diffs for kernel and/or barebox packages.
