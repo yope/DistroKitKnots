@@ -128,9 +128,9 @@ platforms in DistroKit, for example::
 
    $ ./scripts/p-all migrate
 
-The *mips* and *v7a* platforms use config diffs for kernel and/or barebox packages.
-When touching their config files, you can use ``scripts/update-diffs-mips.sh`` and
-``scripts/update-diffs-v7a.sh`` respectively to update the config diffs.
+Some platforms use config diffs for kernel and/or barebox packages.
+When touching their config files, you can use ``ptxdist oldconfig all``
+to update the config files and keep them in sync.
 
 License
 -------
