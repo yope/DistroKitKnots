@@ -14,23 +14,23 @@ PACKAGES-$(PTXCONF_KERNEL_MALTA) += kernel-malta
 #
 # Paths and names
 #
-KERNEL_MALTA_VERSION	:= $(call ptx/config-version, PTXCONF_KERNEL)
-KERNEL_MALTA_MD5	:= $(call ptx/config-md5, PTXCONF_KERNEL)
-KERNEL_MALTA		:= linux-malta-$(KERNEL_MALTA_VERSION)
-KERNEL_MALTA_SUFFIX	:= tar.xz
-KERNEL_MALTA_URL	:= $(call kernel-url, KERNEL_MALTA)
-KERNEL_MALTA_PATCHES	:= linux-$(KERNEL_MALTA_VERSION)
-KERNEL_MALTA_SOURCE	:= $(SRCDIR)/$(KERNEL_MALTA_PATCHES).$(KERNEL_MALTA_SUFFIX)
-KERNEL_MALTA_DIR	:= $(BUILDDIR)/$(KERNEL_MALTA)
-KERNEL_MALTA_BUILD_DIR	:= $(KERNEL_MALTA_DIR)-build
-KERNEL_MALTA_CONFIG	:= $(call ptx/in-platformconfigdir, kernelconfig-malta)
-KERNEL_MALTA_REF_CONFIG	:= $(call ptx/in-platformconfigdir, kernelconfig)
-KERNEL_MALTA_DTS_PATH	:= ${PTXDIST_PLATFORMCONFIG_SUBDIR}/dts:${KERNEL_MALTA_DIR}/arch/${GENERIC_KERNEL_ARCH}/boot/dts/mti
-KERNEL_MALTA_DTS	:= malta.dts
-KERNEL_MALTA_DTB_FILES	:= $(addsuffix .dtb,$(basename $(KERNEL_MALTA_DTS)))
-KERNEL_MALTA_LICENSE	:= GPL-2.0-only
+KERNEL_MALTA_VERSION		:= $(call ptx/config-version, PTXCONF_KERNEL)
+KERNEL_MALTA_MD5		:= $(call ptx/config-md5, PTXCONF_KERNEL)
+KERNEL_MALTA			:= linux-malta-$(KERNEL_MALTA_VERSION)
+KERNEL_MALTA_SUFFIX		:= tar.xz
+KERNEL_MALTA_URL		:= $(call kernel-url, KERNEL_MALTA)
+KERNEL_MALTA_PATCHES		:= linux-$(KERNEL_MALTA_VERSION)
+KERNEL_MALTA_SOURCE		:= $(SRCDIR)/$(KERNEL_MALTA_PATCHES).$(KERNEL_MALTA_SUFFIX)
+KERNEL_MALTA_DIR		:= $(BUILDDIR)/$(KERNEL_MALTA)
+KERNEL_MALTA_BUILD_DIR		:= $(KERNEL_MALTA_DIR)-build
+KERNEL_MALTA_CONFIG		:= $(call ptx/in-platformconfigdir, kernelconfig-malta)
+KERNEL_MALTA_REF_CONFIG		:= $(call ptx/in-platformconfigdir, kernelconfig)
+KERNEL_MALTA_DTS_PATH		:= ${PTXDIST_PLATFORMCONFIG_SUBDIR}/dts:${KERNEL_MALTA_DIR}/arch/${GENERIC_KERNEL_ARCH}/boot/dts
+KERNEL_MALTA_DTS		:= mti/malta.dts
+KERNEL_MALTA_DTB_FILES		:= $(addsuffix .dtb,$(basename $(notdir $(KERNEL_MALTA_DTS))))
+KERNEL_MALTA_LICENSE		:= GPL-2.0-only
 KERNEL_MALTA_LICENSE_FILES	:=
-KERNEL_MALTA_BUILD_OOT	:= KEEP
+KERNEL_MALTA_BUILD_OOT		:= KEEP
 
 # track changes to devices-trees in the BSP
 $(call world/dts-cfghash-file, KERNEL_MALTA)
@@ -47,6 +47,7 @@ KERNEL_MALTA_PATH		:= PATH=$(CROSS_PATH)
 KERNEL_MALTA_SHARED_OPT	:= \
 	-C $(KERNEL_MALTA_DIR) \
 	O=$(KERNEL_MALTA_BUILD_DIR) \
+	PAHOLE=false \
 	$(call kernel-opts, KERNEL_MALTA)
 
 # no gcc plugins; avoid config changes depending on the host compiler
@@ -105,6 +106,10 @@ $(STATEDIR)/kernel-malta.install:
 # ----------------------------------------------------------------------------
 # Target-Install
 # ----------------------------------------------------------------------------
+
+ifneq ($(KERNEL_MALTA_DTB_FILES),)
+$(addprefix $(IMAGEDIR)/,$(KERNEL_MALTA_DTB_FILES)): $(STATEDIR)/kernel-malta.targetinstall
+endif
 
 $(STATEDIR)/kernel-malta.targetinstall:
 	@$(call targetinfo)

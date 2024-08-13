@@ -14,23 +14,23 @@ PACKAGES-$(PTXCONF_KERNEL_AR9331) += kernel-ar9331
 #
 # Paths and names
 #
-KERNEL_AR9331_VERSION	:= $(call ptx/config-version, PTXCONF_KERNEL)
-KERNEL_AR9331_MD5	:= $(call ptx/config-md5, PTXCONF_KERNEL)
-KERNEL_AR9331		:= linux-ar9331-$(KERNEL_AR9331_VERSION)
-KERNEL_AR9331_SUFFIX	:= tar.xz
-KERNEL_AR9331_URL	:= $(call kernel-url, KERNEL_AR9331)
-KERNEL_AR9331_PATCHES	:= linux-$(KERNEL_AR9331_VERSION)
-KERNEL_AR9331_SOURCE	:= $(SRCDIR)/$(KERNEL_AR9331_PATCHES).$(KERNEL_AR9331_SUFFIX)
-KERNEL_AR9331_DIR	:= $(BUILDDIR)/$(KERNEL_AR9331)
-KERNEL_AR9331_BUILD_DIR	:= $(KERNEL_AR9331_DIR)-build
-KERNEL_AR9331_CONFIG	:= $(call ptx/in-platformconfigdir, kernelconfig-ar9331)
+KERNEL_AR9331_VERSION		:= $(call ptx/config-version, PTXCONF_KERNEL)
+KERNEL_AR9331_MD5		:= $(call ptx/config-md5, PTXCONF_KERNEL)
+KERNEL_AR9331			:= linux-ar9331-$(KERNEL_AR9331_VERSION)
+KERNEL_AR9331_SUFFIX		:= tar.xz
+KERNEL_AR9331_URL		:= $(call kernel-url, KERNEL_AR9331)
+KERNEL_AR9331_PATCHES		:= linux-$(KERNEL_AR9331_VERSION)
+KERNEL_AR9331_SOURCE		:= $(SRCDIR)/$(KERNEL_AR9331_PATCHES).$(KERNEL_AR9331_SUFFIX)
+KERNEL_AR9331_DIR		:= $(BUILDDIR)/$(KERNEL_AR9331)
+KERNEL_AR9331_BUILD_DIR		:= $(KERNEL_AR9331_DIR)-build
+KERNEL_AR9331_CONFIG		:= $(call ptx/in-platformconfigdir, kernelconfig-ar9331)
 KERNEL_AR9331_REF_CONFIG	:= $(call ptx/in-platformconfigdir, kernelconfig)
-KERNEL_AR9331_DTS_PATH	:= ${PTXDIST_PLATFORMCONFIG_SUBDIR}/dts:${KERNEL_AR9331_DIR}/arch/${GENERIC_KERNEL_ARCH}/boot/dts/qca
-KERNEL_AR9331_DTS	:= ar9331_dpt_module.dts
-KERNEL_AR9331_DTB_FILES	:= $(addsuffix .dtb,$(basename $(KERNEL_AR9331_DTS)))
-KERNEL_AR9331_LICENSE	:= GPL-2.0-only
+KERNEL_AR9331_DTS_PATH		:= ${PTXDIST_PLATFORMCONFIG_SUBDIR}/dts:${KERNEL_AR9331_DIR}/arch/${GENERIC_KERNEL_ARCH}/boot/dts
+KERNEL_AR9331_DTS		:= qca/ar9331_dpt_module.dts
+KERNEL_AR9331_DTB_FILES		:= $(addsuffix .dtb,$(basename $(notdir $(KERNEL_AR9331_DTS))))
+KERNEL_AR9331_LICENSE		:= GPL-2.0-only
 KERNEL_AR9331_LICENSE_FILES	:=
-KERNEL_AR9331_BUILD_OOT	:= KEEP
+KERNEL_AR9331_BUILD_OOT		:= KEEP
 
 # track changes to devices-trees in the BSP
 $(call world/dts-cfghash-file, KERNEL_AR9331)
@@ -106,6 +106,10 @@ $(STATEDIR)/kernel-ar9331.install:
 # ----------------------------------------------------------------------------
 # Target-Install
 # ----------------------------------------------------------------------------
+
+ifneq ($(KERNEL_AR9331_DTB_FILES),)
+$(addprefix $(IMAGEDIR)/,$(KERNEL_AR9331_DTB_FILES)): $(STATEDIR)/kernel-ar9331.targetinstall
+endif
 
 $(STATEDIR)/kernel-ar9331.targetinstall:
 	@$(call targetinfo)
