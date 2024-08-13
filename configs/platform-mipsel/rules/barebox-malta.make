@@ -27,7 +27,7 @@ BAREBOX_MALTA_BUILD_DIR		:= $(BAREBOX_MALTA_DIR)-build
 BAREBOX_MALTA_CONFIG		:= $(call ptx/in-platformconfigdir, barebox-malta.config)
 BAREBOX_MALTA_REF_CONFIG	:= $(call ptx/in-platformconfigdir, barebox.config)
 BAREBOX_MALTA_LICENSE		:= GPL-2.0-only
-BAREBOX_MALTA_LICENSE_FILES	:=
+BAREBOX_MALTA_LICENSE_FILES	:= $(BAREBOX_LICENSE_FILES)
 BAREBOX_MALTA_BUILD_OOT		:= KEEP
 
 # ----------------------------------------------------------------------------

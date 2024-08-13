@@ -27,7 +27,7 @@ BAREBOX_AR9331_BUILD_DIR	:= $(BAREBOX_AR9331_DIR)-build
 BAREBOX_AR9331_CONFIG		:= $(call ptx/in-platformconfigdir, barebox-ar9331.config)
 BAREBOX_AR9331_REF_CONFIG	:= $(call ptx/in-platformconfigdir, barebox.config)
 BAREBOX_AR9331_LICENSE		:= GPL-2.0-only
-BAREBOX_AR9331_LICENSE_FILES	:=
+BAREBOX_AR9331_LICENSE_FILES	:= $(BAREBOX_LICENSE_FILES)
 BAREBOX_AR9331_BUILD_OOT	:= KEEP
 
 # ----------------------------------------------------------------------------
