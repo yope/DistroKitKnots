@@ -115,13 +115,14 @@ $(STATEDIR)/kernel-ar9331.targetinstall:
 	@$(call targetinfo)
 
 	@$(foreach image, $(KERNEL_AR9331_IMAGES), \
-		install -v -m 644 $(image) \
-			$(IMAGEDIR)/$(notdir $(image))-ar9331$(ptx/nl))
+		$(call ptx/image-install, KERNEL_AR9331, \
+			$(image), \
+			$(notdir $(image))-ar9331$(ptx/nl)))
 
-	@$(foreach dtb ,$(KERNEL_AR9331_DTB_FILES), \
-		echo -e "Installing $(dtb) ...\n"$(ptx/nl) \
-		install -D -m0644 $(KERNEL_AR9331_PKGDIR)/boot/$(dtb) \
-			$(IMAGEDIR)/$(dtb)$(ptx/nl))
+	@$(foreach dtb, $(KERNEL_AR9331_DTB_FILES), \
+		$(call ptx/image-install, KERNEL_AR9331, \
+			$(KERNEL_AR9331_PKGDIR)/boot/$(dtb), \
+			$(dtb)$(ptx/nl)))
 
 	@$(call install_init,  kernel-ar9331)
 	@$(call install_fixup, kernel-ar9331, PRIORITY,optional)
@@ -142,16 +143,6 @@ $(STATEDIR)/kernel-ar9331.targetinstall:
 	@$(call install_finish, kernel-ar9331)
 
 	@$(call touch)
-
-# ----------------------------------------------------------------------------
-# Clean
-# ----------------------------------------------------------------------------
-
-$(STATEDIR)/kernel-ar9331.clean:
-	@$(call targetinfo)
-	@$(call clean_pkg, KERNEL_AR9331)
-	@$(foreach dtb,$(KERNEL_AR9331_DTB_FILES), \
-		rm -vf $(IMAGEDIR)/$(dtb)$(ptx/nl))
 
 # ----------------------------------------------------------------------------
 # oldconfig / menuconfig
