@@ -85,23 +85,16 @@ $(STATEDIR)/barebox-malta.install:
 $(STATEDIR)/barebox-malta.targetinstall:
 	@$(call targetinfo)
 	@$(foreach image, $(BAREBOX_MALTA_IMAGES), \
-		install -m 644 \
-			$(image) $(IMAGEDIR)/$(notdir $(image))$(ptx/nl))
-	@install -D -m644 $(BAREBOX_MALTA_BUILD_DIR)/defaultenv/barebox_zero_env $(IMAGEDIR)/barebox-zero-env-malta
-	@install -D -m644 $(BAREBOX_MALTA_BUILD_DIR)/arch/mips/dts/qemu-malta.dtb $(IMAGEDIR)/qemu-malta.dtb-bb
+		$(call ptx/image-install, BAREBOX_MALTA, $(image), \
+			$(notdir $(image))-malta)$(ptx/nl))
+	@$(call ptx/image-install, BAREBOX_MALTA, \
+		$(BAREBOX_MALTA_BUILD_DIR)/defaultenv/barebox_zero_env, \
+		barebox-zero-env-malta)
+	@$(call ptx/image-install, BAREBOX_MALTA, \
+		$(BAREBOX_MALTA_BUILD_DIR)/arch/mips/dts/qemu-malta.dtb, \
+		qemu-malta.dtb-bb)
+
 	@$(call touch)
-
-# ----------------------------------------------------------------------------
-# Clean
-# ----------------------------------------------------------------------------
-
-$(STATEDIR)/barebox-malta.clean:
-	@$(call targetinfo)
-	@$(call clean_pkg, BAREBOX_MALTA)
-	@$(foreach image, $(BAREBOX_MALTA_IMAGES), \
-		rm -fv $(IMAGEDIR)/$(notdir $(image))$(ptx/nl))
-	@rm -vf $(IMAGEDIR)/barebox-zero-env-malta \
-		$(IMAGEDIR)/qemu-malta.dtb-bb
 
 # ----------------------------------------------------------------------------
 # oldconfig / menuconfig

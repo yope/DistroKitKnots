@@ -85,23 +85,15 @@ $(STATEDIR)/barebox-ar9331.install:
 $(STATEDIR)/barebox-ar9331.targetinstall:
 	@$(call targetinfo)
 	@$(foreach image, $(BAREBOX_AR9331_IMAGES), \
-		install -m 644 \
-			$(image) $(IMAGEDIR)/$(notdir $(image))$(ptx/nl))
-	@install -D -m644 $(BAREBOX_AR9331_BUILD_DIR)/defaultenv/barebox_zero_env $(IMAGEDIR)/barebox-zero-env-ar9331
-	@install -D -m644 $(BAREBOX_AR9331_BUILD_DIR)/arch/mips/dts/ar9331-dptechnics-dpt-module.dtb $(IMAGEDIR)/ar9331-dptechnics-dpt-module.dtb-bb
+		$(call ptx/image-install, BAREBOX_AR9331, $(image), \
+			$(notdir $(image))-ar9331)$(ptx/nl))
+	@$(call ptx/image-install, BAREBOX_AR9331, \
+		$(BAREBOX_AR9331_BUILD_DIR)/defaultenv/barebox_zero_env, \
+		barebox-zero-env-ar9331)
+	@$(call ptx/image-install, BAREBOX_AR9331, \
+		$(BAREBOX_AR9331_BUILD_DIR)/arch/mips/dts/ar9331-dptechnics-dpt-module.dtb, \
+		ar9331-dptechnics-dpt-module.dtb)
 	@$(call touch)
-
-# ----------------------------------------------------------------------------
-# Clean
-# ----------------------------------------------------------------------------
-
-$(STATEDIR)/barebox-ar9331.clean:
-	@$(call targetinfo)
-	@$(call clean_pkg, BAREBOX_AR9331)
-	@$(foreach image, $(BAREBOX_AR9331_IMAGES), \
-		rm -fv $(IMAGEDIR)/$(notdir $(image))$(ptx/nl))
-	@rm -vf $(IMAGEDIR)/barebox-zero-env-ar9331 \
-		$(IMAGEDIR)/ar9331-dptechnics-dpt-module.dtb-bb
 
 # ----------------------------------------------------------------------------
 # oldconfig / menuconfig
