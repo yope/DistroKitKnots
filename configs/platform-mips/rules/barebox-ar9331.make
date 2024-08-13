@@ -17,16 +17,17 @@ PACKAGES-$(PTXCONF_BAREBOX_AR9331) += barebox-ar9331
 #
 BAREBOX_AR9331_VERSION		:= $(call ptx/config-version, PTXCONF_BAREBOX)
 BAREBOX_AR9331_MD5		:= $(call ptx/config-md5, PTXCONF_BAREBOX)
-BAREBOX_AR9331		:= barebox-ar9331-$(BAREBOX_AR9331_VERSION)
+BAREBOX_AR9331			:= barebox-ar9331-$(BAREBOX_AR9331_VERSION)
 BAREBOX_AR9331_SUFFIX		:= tar.bz2
 BAREBOX_AR9331_URL		:= $(call barebox-url, BAREBOX_AR9331)
-BAREBOX_AR9331_PATCHES	:= barebox-$(BAREBOX_AR9331_VERSION)
+BAREBOX_AR9331_PATCHES		:= barebox-$(BAREBOX_AR9331_VERSION)
 BAREBOX_AR9331_SOURCE		:= $(SRCDIR)/$(BAREBOX_AR9331_PATCHES).$(BAREBOX_AR9331_SUFFIX)
 BAREBOX_AR9331_DIR		:= $(BUILDDIR)/$(BAREBOX_AR9331)
 BAREBOX_AR9331_BUILD_DIR	:= $(BAREBOX_AR9331_DIR)-build
 BAREBOX_AR9331_CONFIG		:= $(call ptx/in-platformconfigdir, barebox-ar9331.config)
 BAREBOX_AR9331_REF_CONFIG	:= $(call ptx/in-platformconfigdir, barebox.config)
-BAREBOX_AR9331_LICENSE	:= GPL-2.0-only
+BAREBOX_AR9331_LICENSE		:= GPL-2.0-only
+BAREBOX_AR9331_LICENSE_FILES	:=
 BAREBOX_AR9331_BUILD_OOT	:= KEEP
 
 # ----------------------------------------------------------------------------
@@ -34,18 +35,18 @@ BAREBOX_AR9331_BUILD_OOT	:= KEEP
 # ----------------------------------------------------------------------------
 
 # use host pkg-config for host tools
-BAREBOX_AR9331_PATH := PATH=$(HOST_PATH)
+BAREBOX_AR9331_PATH		:= PATH=$(HOST_PATH)
 
 BAREBOX_AR9331_WRAPPER_BLACKLIST := \
 	$(PTXDIST_LOWLEVEL_WRAPPER_BLACKLIST)
 
-BAREBOX_AR9331_CONF_OPT := \
+BAREBOX_AR9331_CONF_TOOL	:= kconfig
+BAREBOX_AR9331_CONF_OPT	:= \
 	-C $(BAREBOX_AR9331_DIR) \
 	O=$(BAREBOX_AR9331_BUILD_DIR) \
-	BUILDSYSTEM_VERSION=$(PTXDIST_VCS_VERSION) \
 	$(call barebox-opts, BAREBOX_AR9331)
 
-BAREBOX_AR9331_MAKE_OPT := $(BAREBOX_AR9331_CONF_OPT)
+BAREBOX_AR9331_MAKE_OPT	:= $(BAREBOX_AR9331_CONF_OPT)
 
 BAREBOX_AR9331_IMAGES := images/barebox-dptechnics-dpt-module.img
 BAREBOX_AR9331_IMAGES := $(addprefix $(BAREBOX_AR9331_BUILD_DIR)/,$(BAREBOX_AR9331_IMAGES))
@@ -106,7 +107,7 @@ $(STATEDIR)/barebox-ar9331.clean:
 # oldconfig / menuconfig
 # ----------------------------------------------------------------------------
 
-barebox-ar9331_oldconfig barebox-ar9331_menuconfig barebox-ar9331_nconfig: $(STATEDIR)/barebox-ar9331.extract
+$(call ptx/kconfig-targets, barebox-ar9331): $(STATEDIR)/barebox-ar9331.extract
 	@$(call world/kconfig, BAREBOX_AR9331, $(subst barebox-ar9331_,,$@))
 
 # vim: syntax=make

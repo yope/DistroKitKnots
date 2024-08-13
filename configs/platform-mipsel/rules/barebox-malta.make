@@ -15,37 +15,38 @@ PACKAGES-$(PTXCONF_BAREBOX_MALTA) += barebox-malta
 #
 # Paths and names
 #
-BAREBOX_MALTA_VERSION	:= $(call remove_quotes,$(PTXCONF_BAREBOX_VERSION))
+BAREBOX_MALTA_VERSION		:= $(call remove_quotes,$(PTXCONF_BAREBOX_VERSION))
 BAREBOX_MALTA_MD5		:= $(call remove_quotes,$(PTXCONF_BAREBOX_MD5))
-BAREBOX_MALTA		:= barebox-malta-$(BAREBOX_MALTA_VERSION)
+BAREBOX_MALTA			:= barebox-malta-$(BAREBOX_MALTA_VERSION)
 BAREBOX_MALTA_SUFFIX		:= tar.bz2
 BAREBOX_MALTA_URL		:= $(call barebox-url, BAREBOX_MALTA)
-BAREBOX_MALTA_PATCHES	:= barebox-$(BAREBOX_MALTA_VERSION)
+BAREBOX_MALTA_PATCHES		:= barebox-$(BAREBOX_MALTA_VERSION)
 BAREBOX_MALTA_SOURCE		:= $(SRCDIR)/$(BAREBOX_MALTA_PATCHES).$(BAREBOX_MALTA_SUFFIX)
 BAREBOX_MALTA_DIR		:= $(BUILDDIR)/$(BAREBOX_MALTA)
-BAREBOX_MALTA_BUILD_DIR	:= $(BAREBOX_MALTA_DIR)-build
+BAREBOX_MALTA_BUILD_DIR		:= $(BAREBOX_MALTA_DIR)-build
 BAREBOX_MALTA_CONFIG		:= $(call ptx/in-platformconfigdir, barebox-malta.config)
 BAREBOX_MALTA_REF_CONFIG	:= $(call ptx/in-platformconfigdir, barebox.config)
-BAREBOX_MALTA_LICENSE	:= GPL-2.0-only
-BAREBOX_MALTA_BUILD_OOT	:= KEEP
+BAREBOX_MALTA_LICENSE		:= GPL-2.0-only
+BAREBOX_MALTA_LICENSE_FILES	:=
+BAREBOX_MALTA_BUILD_OOT		:= KEEP
 
 # ----------------------------------------------------------------------------
 # Prepare
 # ----------------------------------------------------------------------------
 
 # use host pkg-config for host tools
-BAREBOX_MALTA_PATH := PATH=$(HOST_PATH)
+BAREBOX_MALTA_PATH		:= PATH=$(HOST_PATH)
 
 BAREBOX_MALTA_WRAPPER_BLACKLIST := \
 	$(PTXDIST_LOWLEVEL_WRAPPER_BLACKLIST)
 
-BAREBOX_MALTA_CONF_OPT := \
+BAREBOX_MALTA_CONF_TOOL	:= kconfig
+BAREBOX_MALTA_CONF_OPT	:= \
 	-C $(BAREBOX_MALTA_DIR) \
 	O=$(BAREBOX_MALTA_BUILD_DIR) \
-	BUILDSYSTEM_VERSION=$(PTXDIST_VCS_VERSION) \
 	$(call barebox-opts, BAREBOX_MALTA)
 
-BAREBOX_MALTA_MAKE_OPT := $(BAREBOX_MALTA_CONF_OPT)
+BAREBOX_MALTA_MAKE_OPT	:= $(BAREBOX_MALTA_CONF_OPT)
 
 BAREBOX_MALTA_IMAGES := images/barebox-qemu-malta.img
 BAREBOX_MALTA_IMAGES := $(addprefix $(BAREBOX_MALTA_BUILD_DIR)/,$(BAREBOX_MALTA_IMAGES))
@@ -106,7 +107,7 @@ $(STATEDIR)/barebox-malta.clean:
 # oldconfig / menuconfig
 # ----------------------------------------------------------------------------
 
-barebox-malta_oldconfig barebox-malta_menuconfig barebox-malta_nconfig: $(STATEDIR)/barebox-malta.extract
+$(call ptx/kconfig-targets, barebox-malta): $(STATEDIR)/barebox-malta.extract
 	@$(call world/kconfig, BAREBOX_MALTA, $(subst barebox-malta_,,$@))
 
 # vim: syntax=make
