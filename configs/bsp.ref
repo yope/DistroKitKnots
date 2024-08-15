@@ -1,5 +1,7 @@
 includes:
   - file: ptxdist.ref
+  - file: platform-v7a/bsp.ref
+    condition: kconfig.have_optee_config() and kconfig.OPTEEConfig()['CFG_STM32MP13']
 
 ptxdist_debug_pci:
   description: |
@@ -32,18 +34,6 @@ kernel_initrd:
     - condition: kconfig.PTXPlatformConfig().options['PLATFORM'] in ('v8a', 'v7a')
       value: True
     - value: False
-
-optee_disabled_features:
-  description: |
-    OP-TEE is used as secure monitor on STM32MP13x providing power
-    management and clock/reset control support. We don't use it as
-    part of a trusted boot setup, so we prefer debuggability over
-    reduction of the attack surface.
-  condition: kconfig.have_optee_config() and kconfig.OPTEEConfig()['CFG_STM32MP13']
-  present:
-    - CFG_DEBUG_INFO
-    - CFG_ENABLE_EMBEDDED_TESTS
-    - CFG_TEE_CORE_TA_TRACE
 
 barebox_arm_optimized_string_functions:
   description: |
