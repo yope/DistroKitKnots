@@ -13,6 +13,8 @@ ptxdist_debug_pci:
       value: False
     - condition: kconfig.PTXPlatformConfig()['ARCH_ARM64']
       value: False
+    - condition: kconfig.PTXPlatformConfig()['ARCH_MIPS']
+      value: False
     - value: True
 
 kernel_dtb_partitions:
