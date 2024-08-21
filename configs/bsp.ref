@@ -13,7 +13,7 @@ ptxdist_debug_pci:
       value: False
     - condition: kconfig.PTXPlatformConfig()['ARCH_ARM64']
       value: False
-    - condition: kconfig.PTXPlatformConfig()['ARCH_MIPS']
+    - condition: kconfig.PTXPlatformConfig()['ARCH_MIPS'] and not kconfig.KernelConfig()['ATH79']
       value: False
     - value: True
 
