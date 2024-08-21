@@ -115,7 +115,6 @@ CONFIG_MENU=y
 # CONFIG_MFD_STPMIC1 is not set
 # CONFIG_MFD_TWL4030 is not set
 # CONFIG_MFD_TWL6030 is not set
-# CONFIG_MMU is not set
 # CONFIG_MTD_DATAFLASH is undefined
 # CONFIG_MTD_M25P80 is undefined
 CONFIG_MTD_OOB_DEVICE=y
