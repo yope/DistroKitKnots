@@ -72,7 +72,7 @@ QEMU_ARGS=( "${QEMU_ARGS[@]}" -rtc base=2021-01-01 )
 
 QEMU_LINUX_ARGS=( -kernel ${PTXDIST_PLATFORMDIR}/images/vmlinuz-malta -dtb ${PTXDIST_PLATFORMDIR}/images/qemu-malta.dtb-bb )
 # the barebox device tree has a state node for bootchooser
-QEMU_BAREBOX_ARGS=( -bios  ${PTXDIST_PLATFORMDIR}/images/barebox-qemu-malta.img )
+QEMU_BAREBOX_ARGS=( -bios  ${PTXDIST_PLATFORMDIR}/images/barebox-qemu-malta.img.swapped-malta )
 
 check_hd() {
 	if [ ! -e "${PTXDIST_PLATFORMDIR}/images/malta.hdimg" ]; then
