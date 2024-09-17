@@ -26,6 +26,8 @@ kernel_dtb_partitions:
       value: True
     - condition: kconfig.PTXPlatformConfig().options.get('PLATFORM') == "v7a_noneon"
       value: True
+    - condition: kconfig.PTXPlatformConfig().options.get('PLATFORM') == "v8a"
+      value: True
     - value: False
 
 kernel_initrd:
