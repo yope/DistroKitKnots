@@ -3192,7 +3192,7 @@ CONFIG_DMA_BCM2835=y
 # CONFIG_FSL_EDMA is not set
 # CONFIG_FSL_QDMA is not set
 # CONFIG_IMX_DMA is not set
-# CONFIG_IMX_SDMA is not set
+CONFIG_IMX_SDMA=y
 # CONFIG_INTEL_IDMA64 is not set
 # CONFIG_MXS_DMA is not set
 # CONFIG_NBPFAXI_DMA is not set
