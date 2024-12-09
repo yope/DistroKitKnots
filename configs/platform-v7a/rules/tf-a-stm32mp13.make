@@ -61,8 +61,6 @@ TF_A_STM32MP13_CONF_TOOL	:= NO
 # Compile
 # ----------------------------------------------------------------------------
 
-TF_A_STM32MP13_MAKE_ENV	:= $(CROSS_ENV)
-
 $(STATEDIR)/tf-a-stm32mp13.compile:
 	@$(call targetinfo)
 
