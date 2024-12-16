@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# PTXdist 2024.11.0
+# PTXdist 2024.12.0
 #
 
 #
@@ -75,7 +75,7 @@ PTXCONF_BSP=y
 PTXCONF_RUNTIME=y
 PTXCONF_BUILDTIME=y
 PTXCONF_VIRTUAL=y
-PTXCONF_CONFIGFILE_VERSION="2024.11.0"
+PTXCONF_CONFIGFILE_VERSION="2024.12.0"
 PTXCONF__ptxconfig_MAGIC__=y
 
 #
@@ -2251,6 +2251,7 @@ PTXCONF_RAUC_BAREBOX=y
 # PTXCONF_ENSMALLEN is not set
 PTXCONF_EXPAT=y
 # PTXCONF_FLEX is not set
+# PTXCONF_FMT is not set
 # PTXCONF_GETTEXT is not set
 # PTXCONF_GFLAGS is not set
 # PTXCONF_GPGME is not set
@@ -2515,6 +2516,7 @@ PTXCONF_DBUS_SYSTEMD_UNIT=y
 # PTXCONF_STRESS is not set
 # PTXCONF_TIOBENCH is not set
 # PTXCONF_VKRUNNER is not set
+# PTXCONF_X11PERF is not set
 # end of Test Suites                   
 
 #
