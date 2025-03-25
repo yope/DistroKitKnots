@@ -75,4 +75,12 @@ rootfs_unused_libraries:
   optional:
   - !!re '/usr/lib/libatomic\.so.*'
 
+optee_security_warning_disabled:
+  description: |
+    OP-TEE is used as secure monitor on STM32MP13x providing power
+    management and clock/reset control support. We don't use it as
+    part of a trusted boot setup, so it's apt for OP-TEE to warn
+    about this at startup and thus we'll keep CFG_INSECURE enabled.
+  value: True
+
 # vim: filetype=yaml shiftwidth=2 expandtab
