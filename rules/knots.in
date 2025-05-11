@@ -1,0 +1,9 @@
+## SECTION=project_specific
+
+config KNOTS
+	bool
+	prompt "knots"
+	select BOOST
+	select LIBEVENT
+	help
+	  FIXME
