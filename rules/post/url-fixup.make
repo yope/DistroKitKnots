@@ -1,0 +1,13 @@
+HOST_AUTOTOOLS_LIBTOOL_URL=https://ftp.gnu.org/gnu/libtool/libtool-2.5.3.tar.gz
+NCURSES_URL=https://ftp.gnu.org/gnu/ncurses/ncurses-6.5.tar.gz
+XORG_LIB_XRANDR_URL=https://download.automotivelinux.org/AGL/release/lamprey/latest/bbe/deploy/sources/x86_64-linux/libxrandr-native-1_1.5.2-r0/libXrandr-1.5.2.tar.bz2
+BASH_URL=https://ftp.gnu.org/gnu/bash/bash-5.2.37.tar.gz
+HOST_XORG_UTIL_MACROS_URL=https://sources.voidlinux.org/xorg-util-macros-1.20.2/util-macros-1.20.2.tar.xz
+PIXMAN_URL=https://ftp.yandex.ru/gentoo-distfiles/distfiles/22/pixman-0.44.2.tar.xz
+HOST_AUTOTOOLS_AUTOMAKE_URL=https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz
+LIBTASN1_URL=https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.19.0.tar.gz
+GDB_URL=https://ftp.gnu.org/gnu/gdb/gdb-15.2.tar.xz
+GDBSERVER_URL=https://ftp.gnu.org/gnu/gdb/gdb-15.2.tar.xz
+READLINE_URL=https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz
+XORGPROTO_URL=https://www.x.org/releases/individual/proto/xorgproto-2024.1.tar.xz
+SOFTHSM_URL=https://fossies.org/linux/misc/softhsm-2.6.1.tar.gz
